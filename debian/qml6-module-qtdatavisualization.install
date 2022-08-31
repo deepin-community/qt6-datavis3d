@@ -1,0 +1,11 @@
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/Bars3DSpecifics.qml
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/Scatter3DSpecifics.qml
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/Surface3DSpecifics.qml
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/default/Bars3D.qml
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/default/Scatter3D.qml
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/default/Surface3D.qml
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/images
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/designer/qtdatavisualization.metainfo
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/libdatavisualizationqml2plugin.so
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/plugins.qmltypes
+usr/lib/${DEB_HOST_MULTIARCH}/qt6/qml/QtDataVisualization/qmldir
