@@ -1,31 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the Qt Data Visualization module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 or (at your option) any later version
-** approved by the KDE Free Qt Foundation. The licenses are as published by
-** the Free Software Foundation and appearing in the file LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "abstractdeclarative_p.h"
 #include "abstract3dcontroller_p.h"
@@ -177,6 +151,11 @@ void Abstract3DController::removeSeries(QAbstract3DSeries *series)
         m_isSeriesVisualsDirty = true;
         emitNeedRender();
     }
+}
+
+bool Abstract3DController::hasSeries(QAbstract3DSeries *series)
+{
+    return m_seriesList.contains(series);
 }
 
 QList<QAbstract3DSeries *> Abstract3DController::seriesList()
@@ -1017,7 +996,7 @@ int Abstract3DController::addCustomItem(QCustom3DItem *item)
     item->d_ptr->resetDirtyBits();
     m_isCustomDataDirty = true;
     emitNeedRender();
-    return m_customItems.count() - 1;
+    return m_customItems.size() - 1;
 }
 
 void Abstract3DController::deleteCustomItems()
@@ -1544,7 +1523,7 @@ int Abstract3DController::selectedLabelIndex() const
 {
     int index = m_selectedLabelIndex;
     QAbstract3DAxis *axis = selectedAxis();
-    if (axis && axis->labels().count() <= index)
+    if (axis && axis->labels().size() <= index)
         index = -1;
     return index;
 }
@@ -1574,7 +1553,7 @@ QAbstract3DAxis *Abstract3DController::selectedAxis() const
 int Abstract3DController::selectedCustomItemIndex() const
 {
     int index = m_selectedCustomItemIndex;
-    if (m_customItems.count() <= index)
+    if (m_customItems.size() <= index)
         index = -1;
     return index;
 }

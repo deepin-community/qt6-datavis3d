@@ -1,31 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the Qt Data Visualization module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 or (at your option) any later version
-** approved by the KDE Free Qt Foundation. The licenses are as published by
-** the Free Software Foundation and appearing in the file LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "abstract3drenderer_p.h"
 #include "texturehelper_p.h"
@@ -749,8 +723,10 @@ void Abstract3DRenderer::updateCustomData(const QList<QCustom3DItem *> &customIt
         CustomRenderItem *renderItem = m_customRenderCache.value(item);
         if (!renderItem)
             renderItem = addCustomItem(item);
-        renderItem->setValid(true);
-        renderItem->setIndex(i); // always update index, as it must match the custom item index
+        if (renderItem) {
+            renderItem->setValid(true);
+            renderItem->setIndex(i); // always update index, as it must match the custom item index
+        }
     }
 
     // Check render item cache and remove items that are not in customItems list anymore
@@ -941,11 +917,26 @@ void Abstract3DRenderer::drawAxisTitleX(const QVector3D &labelRotation,
                 xRotation = -90.0f - labelRotation.z();
                 extraRotation = -extraRotation;
             }
+            if (m_yFlipped) {
+                alignment = Qt::AlignBottom;
+                extraRotation = -extraRotation;
+                if (m_xFlipped)
+                    xRotation = 90.0f + labelRotation.z();
+                else
+                    xRotation = 90.0f - labelRotation.z();
+            }
         } else {
             if (m_xFlipped) {
                 offsetRotation = -offsetRotation;
                 xRotation = -90.0f - labelRotation.z();
                 extraRotation = -extraRotation;
+            }
+            if (m_yFlipped) {
+                xRotation = 90.0f + labelRotation.z();
+                alignment = Qt::AlignBottom;
+                extraRotation = -extraRotation;
+                if (m_xFlipped)
+                    xRotation = 90.0f - labelRotation.z();
             }
         }
     }
@@ -1037,6 +1028,11 @@ void Abstract3DRenderer::drawAxisTitleZ(const QVector3D &labelRotation,
             } else {
                 yRotation = -yRotation;
             }
+        }
+        if (m_yFlipped) {
+            xRotation = -xRotation;
+            alignment = Qt::AlignBottom;
+            extraRotation = -extraRotation;
         }
     }
 
@@ -1133,7 +1129,10 @@ CustomRenderItem *Abstract3DRenderer::addCustomItem(QCustom3DItem *item)
     CustomRenderItem *newItem = new CustomRenderItem();
     newItem->setRenderer(this);
     newItem->setItemPointer(item); // Store pointer for render item updates
-    newItem->setMesh(item->meshFile());
+    if (!newItem->setMesh(item->meshFile())) {
+        delete newItem;
+        return nullptr;
+    }
     newItem->setOrigPosition(item->position());
     newItem->setOrigScaling(item->scaling());
     newItem->setScalingAbsolute(item->isScalingAbsolute());
@@ -1446,7 +1445,7 @@ void Abstract3DRenderer::drawCustomItems(RenderingState state,
     bool volumeDetected = false;
     int loopCount = 0;
     while (loopCount < 2) {
-        for (QCustom3DItem *customItem : qAsConst(m_customItemDrawOrder)) {
+        for (QCustom3DItem *customItem : std::as_const(m_customItemDrawOrder)) {
             CustomRenderItem *item = m_customRenderCache.value(customItem);
             // Check that the render item is visible, and skip drawing if not
             // Also check if reflected item is on the "wrong" side, and skip drawing if it is
