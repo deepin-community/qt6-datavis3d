@@ -34,6 +34,7 @@ qt_internal_add_module(DataVisualization
         data/scatteritemmodelhandler.cpp data/scatteritemmodelhandler_p.h
         data/scatterrenderitem.cpp data/scatterrenderitem_p.h
         data/surfaceitemmodelhandler.cpp data/surfaceitemmodelhandler_p.h
+        engine/abstractdeclarativeinterface.cpp engine/abstractdeclarativeinterface_p.h
         engine/abstract3dcontroller.cpp engine/abstract3dcontroller_p.h
         engine/abstract3drenderer.cpp engine/abstract3drenderer_p.h
         engine/axisrendercache.cpp engine/axisrendercache_p.h
@@ -84,13 +85,14 @@ qt_internal_add_module(DataVisualization
         input
         theme
         utils
-        ../datavisualizationqml2
+        ../datavisualizationqml
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
         Qt::OpenGL
         Qt::Qml
         Qt::Quick
+    GENERATE_CPP_EXPORTS
 )
 
 set_source_files_properties("engine/meshes/arrowFlat.obj"
@@ -371,7 +373,7 @@ set(shader_resource_files
     "engine/shaders/texture_ES2.frag"
 )
 
-qt_internal_add_resource(DataVisualization "shaders"
+qt_internal_add_resource(DataVisualization "datavisualizationshaders"
     PREFIX
         "/shaders"
     BASE
@@ -380,7 +382,7 @@ qt_internal_add_resource(DataVisualization "shaders"
         ${shader_resource_files}
 )
 
-qt_internal_add_resource(DataVisualization "meshes"
+qt_internal_add_resource(DataVisualization "datavisualizationmeshes"
     PREFIX
         "/defaultMeshes"
     BASE

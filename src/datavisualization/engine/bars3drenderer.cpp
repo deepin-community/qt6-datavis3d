@@ -1,31 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the Qt Data Visualization module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 or (at your option) any later version
-** approved by the KDE Free Qt Foundation. The licenses are as published by
-** the Free Software Foundation and appearing in the file LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "bars3drenderer_p.h"
 #include "q3dcamera_p.h"
@@ -49,6 +23,7 @@ Bars3DRenderer::Bars3DRenderer(Bars3DController *controller)
       m_cachedIsSlicingActivated(false),
       m_cachedRowCount(0),
       m_cachedColumnCount(0),
+      m_cachedBarSeriesMargin(0.0f, 0.0f),
       m_selectedBar(0),
       m_sliceCache(0),
       m_sliceTitleItem(0),
@@ -198,7 +173,8 @@ void Bars3DRenderer::updateData()
 
     m_seriesScaleX = 1.0f / float(m_visibleSeriesCount);
     m_seriesStep = 1.0f / float(m_visibleSeriesCount);
-    m_seriesStart = -((float(m_visibleSeriesCount) - 1.0f) / 2.0f) * m_seriesStep;
+    m_seriesStart = -((float(m_visibleSeriesCount) - 1.0f) / 2.0f)
+            * (m_seriesStep - (m_seriesStep * m_cachedBarSeriesMargin.width()));
 
     if (m_keepSeriesUniform)
         m_seriesScaleZ = m_seriesScaleX;
@@ -1077,7 +1053,9 @@ void Bars3DRenderer::drawScene(GLuint defaultFboHandle)
         foreach (SeriesRenderCache *baseCache, m_renderCacheList) {
             if (baseCache->isVisible()) {
                 BarSeriesRenderCache *cache = static_cast<BarSeriesRenderCache *>(baseCache);
-                float seriesPos = m_seriesStart + m_seriesStep * cache->visualIndex() + 0.5f;
+                float seriesPos = m_seriesStart + m_seriesStep
+                        * (cache->visualIndex() - (cache->visualIndex()
+                                                   * m_cachedBarSeriesMargin.width())) + 0.5f;
                 ObjectHelper *barObj = cache->object();
                 QQuaternion seriesRotation(cache->meshRotation());
                 const BarRenderItemArray &renderArray = cache->renderArray();
@@ -1199,7 +1177,9 @@ void Bars3DRenderer::drawScene(GLuint defaultFboHandle)
         foreach (SeriesRenderCache *baseCache, m_renderCacheList) {
             if (baseCache->isVisible()) {
                 BarSeriesRenderCache *cache = static_cast<BarSeriesRenderCache *>(baseCache);
-                float seriesPos = m_seriesStart + m_seriesStep * cache->visualIndex() + 0.5f;
+                float seriesPos = m_seriesStart + m_seriesStep
+                        * (cache->visualIndex() - (cache->visualIndex()
+                                                   * m_cachedBarSeriesMargin.width())) + 0.5f;
                 ObjectHelper *barObj = cache->object();
                 QQuaternion seriesRotation(cache->meshRotation());
                 const BarRenderItemArray &renderArray = cache->renderArray();
@@ -1459,7 +1439,9 @@ bool Bars3DRenderer::drawBars(BarRenderItem **selectedBar,
     foreach (SeriesRenderCache *baseCache, m_renderCacheList) {
         if (baseCache->isVisible()) {
             BarSeriesRenderCache *cache = static_cast<BarSeriesRenderCache *>(baseCache);
-            float seriesPos = m_seriesStart + m_seriesStep * cache->visualIndex() + 0.5f;
+            float seriesPos = m_seriesStart + m_seriesStep
+                    * (cache->visualIndex() - (cache->visualIndex()
+                                               * m_cachedBarSeriesMargin.width())) + 0.5f;
             ObjectHelper *barObj = cache->object();
             QQuaternion seriesRotation(cache->meshRotation());
             Q3DTheme::ColorStyle colorStyle = cache->colorStyle();
@@ -1620,10 +1602,17 @@ bool Bars3DRenderer::drawBars(BarRenderItem **selectedBar,
                         }
                         case Bars3DController::SelectionNone: {
                             // Current bar is not selected, nor on a row or column
-                            if (colorStyleIsUniform)
-                                barColor = baseColor;
-                            else
+                            if (colorStyleIsUniform) {
+                                QList<QColor> rowColors = cache->series()->rowColors();
+                                if (rowColors.size() == 0) {
+                                    barColor = baseColor;
+                                } else {
+                                    int rowColorIndex = row % rowColors.size();
+                                    barColor =  Utils::vectorFromColor(rowColors[rowColorIndex]);
+                                }
+                            } else {
                                 gradientTexture = cache->baseGradientTexture();
+                            }
                             break;
                         }
                         }
@@ -2051,10 +2040,14 @@ void Bars3DRenderer::drawLabels(bool drawSelection, const Q3DCamera *activeCamer
 
     glEnable(GL_POLYGON_OFFSET_FILL);
 
+    // If camera x rotation is 180, side labels face wrong direction
+    float activeCameraXRotation = (activeCamera->xRotation() >= 180.0f) ? -180.0f
+                                                                        : activeCamera->xRotation();
+
     float labelAutoAngle = m_axisCacheY.labelAutoRotation();
     float labelAngleFraction = labelAutoAngle / 90.0f;
     float fractionCamY = activeCamera->yRotation() * labelAngleFraction;
-    float fractionCamX = activeCamera->xRotation() * labelAngleFraction;
+    float fractionCamX = activeCameraXRotation * labelAngleFraction;
     float labelsMaxWidth = 0.0f;
 
     int startIndex;
@@ -2168,7 +2161,7 @@ void Bars3DRenderer::drawLabels(bool drawSelection, const Q3DCamera *activeCamer
     labelAutoAngle = m_axisCacheZ.labelAutoRotation();
     labelAngleFraction = labelAutoAngle / 90.0f;
     fractionCamY = activeCamera->yRotation() * labelAngleFraction;
-    fractionCamX = activeCamera->xRotation() * labelAngleFraction;
+    fractionCamX = activeCameraXRotation * labelAngleFraction;
     GLfloat labelYAdjustment = 0.005f;
     GLfloat colPosValue = m_scaleXWithBackground + labelMargin;
     GLfloat rowPosValue = m_scaleZWithBackground + labelMargin;
@@ -2293,7 +2286,7 @@ void Bars3DRenderer::drawLabels(bool drawSelection, const Q3DCamera *activeCamer
     labelAutoAngle = m_axisCacheX.labelAutoRotation();
     labelAngleFraction = labelAutoAngle / 90.0f;
     fractionCamY = activeCamera->yRotation() * labelAngleFraction;
-    fractionCamX = activeCamera->xRotation() * labelAngleFraction;
+    fractionCamX = activeCameraXRotation * labelAngleFraction;
     alignment = (m_xFlipped != m_zFlipped) ? Qt::AlignLeft : Qt::AlignRight;
     if (labelAutoAngle == 0.0f) {
         labelRotation = QVector3D(-90.0f, 90.0f, 0.0f);
@@ -2460,6 +2453,13 @@ void Bars3DRenderer::updateBarSpecs(GLfloat thicknessRatio, const QSizeF &spacin
     calculateSceneScalingFactors();
 }
 
+void Bars3DRenderer::updateBarSeriesMargin(const QSizeF &margin)
+{
+    m_cachedBarSeriesMargin = margin;
+    calculateSeriesStartPosition();
+    calculateSceneScalingFactors();
+}
+
 void Bars3DRenderer::updateAxisRange(QAbstract3DAxis::AxisOrientation orientation, float min,
                                      float max)
 {
@@ -2592,6 +2592,10 @@ void Bars3DRenderer::calculateSceneScalingFactors()
     m_scaleX = m_cachedBarThickness.width() / m_scaleFactor;
     m_scaleZ = m_cachedBarThickness.height() / m_scaleFactor;
 
+    // Adjust scaling according to margin
+    m_scaleX -= m_scaleX * m_cachedBarSeriesMargin.width();
+    m_scaleZ -= m_scaleZ * m_cachedBarSeriesMargin.height();
+
     // Whole graph scale factors
     m_xScaleFactor = m_rowWidth / m_scaleFactor;
     m_zScaleFactor = m_columnDepth / m_scaleFactor;
@@ -2653,6 +2657,12 @@ void Bars3DRenderer::calculateHeightAdjustment()
         m_backgroundAdjustment = newAdjustment;
         m_axisCacheY.setTranslate(m_backgroundAdjustment - 1.0f);
     }
+}
+
+void Bars3DRenderer::calculateSeriesStartPosition()
+{
+    m_seriesStart = -((float(m_visibleSeriesCount) - 1.0f) / 2.0f)
+            * (m_seriesStep - (m_seriesStep * m_cachedBarSeriesMargin.width()));
 }
 
 Bars3DController::SelectionType Bars3DRenderer::isSelected(int row, int bar,

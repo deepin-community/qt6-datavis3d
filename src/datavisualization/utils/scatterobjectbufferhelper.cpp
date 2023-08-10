@@ -1,31 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the Qt Data Visualization module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 or (at your option) any later version
-** approved by the KDE Free Qt Foundation. The licenses are as published by
-** the Free Software Foundation and appearing in the file LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "scatterobjectbufferhelper_p.h"
 #include "objecthelper_p.h"
@@ -78,10 +52,10 @@ void ScatterObjectBufferHelper::fullLoad(ScatterSeriesRenderCache *cache, qreal 
     const QList<QVector3D> indexed_vertices = dotObj->indexedvertices();
     const QList<QVector2D> indexed_uvs = dotObj->indexedUVs();
     const QList<QVector3D> indexed_normals = dotObj->indexedNormals();
-    const int indicesCount = indices.count();
-    const int verticeCount = indexed_vertices.count();
-    const int uvsCount = indexed_uvs.count();
-    const int normalsCount = indexed_normals.count();
+    const int indicesCount = indices.size();
+    const int verticeCount = indexed_vertices.size();
+    const int uvsCount = indexed_uvs.size();
+    const int normalsCount = indexed_normals.size();
 
     float itemSize = cache->itemSize() / itemScaler;
     if (itemSize == 0.0f)
@@ -98,7 +72,7 @@ void ScatterObjectBufferHelper::fullLoad(ScatterSeriesRenderCache *cache, qreal 
     QList<QVector3D> scaled_vertices;
     scaled_vertices.resize(verticeCount);
     for (int i = 0; i < verticeCount; i++)
-        scaled_vertices[i] = indexed_vertices[i] * modelMatrix;
+        scaled_vertices[i] = (QVector4D(indexed_vertices[i]) * modelMatrix).toVector3D();
 
     QList<GLuint> buffered_indices;
     QList<QVector3D> buffered_vertices;
@@ -141,9 +115,11 @@ void ScatterObjectBufferHelper::fullLoad(ScatterSeriesRenderCache *cache, qreal 
             modelMatrix = matrix.transposed(); // Because of row-column major difference
 
             for (int j = 0; j < verticeCount; j++) {
-                buffered_vertices[j + offset] = indexed_vertices[j] * modelMatrix
+                buffered_vertices[j + offset]
+                        = (QVector4D(indexed_vertices[j]) * modelMatrix).toVector3D()
                         + item.translation();
-                buffered_normals[j + offset] = indexed_normals[j] * itModelMatrix;
+                buffered_normals[j + offset]
+                        = (QVector4D(indexed_normals[j]) * itModelMatrix).toVector3D();
             }
         }
 
@@ -196,7 +172,7 @@ void ScatterObjectBufferHelper::fullLoad(ScatterSeriesRenderCache *cache, qreal 
 void ScatterObjectBufferHelper::updateUVs(ScatterSeriesRenderCache *cache)
 {
     ObjectHelper *dotObj = cache->object();
-    const int uvsCount = dotObj->indexedUVs().count();
+    const int uvsCount = dotObj->indexedUVs().size();
     const ScatterRenderItemArray &renderArray = cache->renderArray();
     const bool updateAll = (cache->updateIndices().size() == 0);
     const int updateSize = updateAll ? renderArray.size() : cache->updateIndices().size();
@@ -237,7 +213,7 @@ uint ScatterObjectBufferHelper::createRangeGradientUVs(ScatterSeriesRenderCache 
                                                        QList<QVector2D> &buffered_uvs)
 {
     ObjectHelper *dotObj = cache->object();
-    const int uvsCount = dotObj->indexedUVs().count();
+    const int uvsCount = dotObj->indexedUVs().size();
     const ScatterRenderItemArray &renderArray = cache->renderArray();
     const bool updateAll = (cache->updateIndices().size() == 0);
     const int updateSize = updateAll ? renderArray.size() : cache->updateIndices().size();
@@ -280,7 +256,7 @@ uint ScatterObjectBufferHelper::createObjectGradientUVs(ScatterSeriesRenderCache
                                                         const QList<QVector3D> &indexed_vertices)
 {
     ObjectHelper *dotObj = cache->object();
-    const int uvsCount = dotObj->indexedUVs().count();
+    const int uvsCount = dotObj->indexedUVs().size();
     const ScatterRenderItemArray &renderArray = cache->renderArray();
     const uint renderArraySize = renderArray.size();
 
@@ -317,7 +293,7 @@ void ScatterObjectBufferHelper::update(ScatterSeriesRenderCache *cache, qreal do
 
     // Index vertices
     const QList<QVector3D> indexed_vertices = dotObj->indexedvertices();
-    int verticeCount = indexed_vertices.count();
+    int verticeCount = indexed_vertices.size();
 
     float itemSize = cache->itemSize() / itemScaler;
     if (itemSize == 0.0f)
@@ -334,7 +310,7 @@ void ScatterObjectBufferHelper::update(ScatterSeriesRenderCache *cache, qreal do
     QList<QVector3D> scaled_vertices;
     scaled_vertices.resize(verticeCount);
     for (int i = 0; i < verticeCount; i++)
-        scaled_vertices[i] = indexed_vertices[i] * modelMatrix;
+        scaled_vertices[i] = (QVector4D(indexed_vertices[i]) * modelMatrix).toVector3D();
 
     QList<QVector3D> buffered_vertices;
     buffered_vertices.resize(verticeCount * updateSize);
@@ -356,9 +332,11 @@ void ScatterObjectBufferHelper::update(ScatterSeriesRenderCache *cache, qreal do
             modelMatrix = matrix.transposed();
             modelMatrix.scale(modelScaler);
 
-            for (int j = 0; j < verticeCount; j++)
-                buffered_vertices[j + offset] = indexed_vertices[j] * modelMatrix
+            for (int j = 0; j < verticeCount; j++) {
+                buffered_vertices[j + offset]
+                        = (QVector4D(indexed_vertices[j]) * modelMatrix).toVector3D()
                         + item.translation();
+            }
         }
         itemCount++;
     }

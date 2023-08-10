@@ -1,31 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the Qt Data Visualization module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:GPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3 or (at your option) any later version
-** approved by the KDE Free Qt Foundation. The licenses are as published by
-** the Free Software Foundation and appearing in the file LICENSE.GPL3
-** included in the packaging of this file. Please review the following
-** information to ensure the GNU General Public License requirements will
-** be met: https://www.gnu.org/licenses/gpl-3.0.html.
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 //
 //  W A R N I N G
@@ -57,7 +31,7 @@ class LabelItem;
 class Q3DScene;
 class BarSeriesRenderCache;
 
-class QT_DATAVISUALIZATION_EXPORT Bars3DRenderer : public Abstract3DRenderer
+class Q_DATAVISUALIZATION_EXPORT Bars3DRenderer : public Abstract3DRenderer
 {
     Q_OBJECT
 
@@ -68,6 +42,7 @@ private:
     bool m_cachedIsSlicingActivated;
     int m_cachedRowCount;
     int m_cachedColumnCount;
+    QSizeF m_cachedBarSeriesMargin;
 
     // Internal state
     BarRenderItem *m_selectedBar; // points to renderitem array
@@ -144,6 +119,7 @@ public Q_SLOTS:
     void updateBarSpecs(GLfloat thicknessRatio = 1.0f,
                         const QSizeF &spacing = QSizeF(1.0, 1.0),
                         bool relative = true);
+    void updateBarSeriesMargin(const QSizeF &margin);
     void updateSlicingActive(bool isSlicing);
     void updateSelectedBar(const QPoint &position, QBar3DSeries *series);
     inline QPoint clickedPosition() const { return m_clickedPosition; }
@@ -186,6 +162,7 @@ private:
     void updateDepthBuffer() override;
     void calculateSceneScalingFactors();
     void calculateHeightAdjustment();
+    void calculateSeriesStartPosition();
     Abstract3DController::SelectionType isSelected(int row, int bar,
                                                    const BarSeriesRenderCache *cache);
     QPoint selectionColorToArrayPosition(const QVector4D &selectionColor);

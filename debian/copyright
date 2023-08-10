@@ -3,7 +3,7 @@ Upstream-Name: qtdatavis3d-everywhere-src
 Source: https://download.qt.io/archive/qt/*/submodules/
 
 Files: *
-Copyright: 2016-2021 The Qt Company Ltd.
+Copyright: 2016-2022 The Qt Company Ltd.
 License: GPL-3
 
 Files: examples/datavisualization/texturesurface/*.png
@@ -21,7 +21,7 @@ Copyright: 2016 The Qt Company Ltd.
 License: GFDL-NIV-1.3
 
 Files: debian/*
-Copyright: 2021 Patrick Franz <deltaone@debian.org>
+Copyright: 2021-2022 Patrick Franz <deltaone@debian.org>
            2021 Lu YaNing <dluyaning@gmail.com>
 License: GPL-3
 
