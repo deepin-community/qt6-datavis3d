@@ -8,7 +8,7 @@
 #if defined(Q_OS_IOS)
 #include <QtCore/QTimer>
 #endif
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
 #include <qpa/qplatformnativeinterface.h>
 #endif
 
@@ -64,8 +64,11 @@ AbstractDeclarative::~AbstractDeclarative()
 
 void AbstractDeclarative::setRenderingMode(AbstractDeclarative::RenderingMode mode)
 {
-    if (mode == m_renderMode)
+    if (mode == m_renderMode
+        || mode <= AbstractDeclarative::RenderingMode::RenderDirectToBackground
+        || mode >= AbstractDeclarative::RenderingMode::RenderIndirect) {
         return;
+    }
 
     RenderingMode previousMode = m_renderMode;
 
@@ -425,7 +428,7 @@ void AbstractDeclarative::handleWindowChanged(QQuickWindow *window)
     if (!window)
         return;
 
-#if defined(Q_OS_OSX)
+#if defined(Q_OS_MACOS)
     bool previousVisibility = window->isVisible();
     // Enable touch events for Mac touchpads
     window->setVisible(true);
@@ -562,7 +565,7 @@ void AbstractDeclarative::render()
 
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
 
-    if (isVisible()) {
+    if (funcs && isVisible()) {
         funcs->glDepthMask(GL_TRUE);
         funcs->glEnable(GL_DEPTH_TEST);
         funcs->glDepthFunc(GL_LESS);
@@ -644,8 +647,8 @@ void AbstractDeclarative::checkWindowList(QQuickWindow *window)
     }
 
     QList<QQuickWindow *> windowList;
-
-    foreach (AbstractDeclarative *graph, graphWindowList.keys()) {
+    const auto graphs = graphWindowList.keys();
+    for (AbstractDeclarative *graph : graphs) {
         if (graph->m_renderMode == RenderDirectToBackground
                 || graph->m_renderMode == RenderDirectToBackground_NoClear) {
             windowList.append(graphWindowList.value(graph));

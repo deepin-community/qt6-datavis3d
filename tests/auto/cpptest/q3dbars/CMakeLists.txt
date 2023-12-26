@@ -1,9 +1,12 @@
-qt_internal_add_test(q3dbars
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
+qt_internal_add_test(q3dbars_datavis
     SOURCES
         tst_bars.cpp
     INCLUDE_DIRECTORIES
         ../common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::GuiPrivate
         Qt::DataVisualization
