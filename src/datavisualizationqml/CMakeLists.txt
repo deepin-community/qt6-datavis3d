@@ -1,3 +1,6 @@
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 set(qml_files
     "designer/Bars3DSpecifics.qml"
     "designer/Scatter3DSpecifics.qml"
@@ -46,7 +49,7 @@ qt_internal_add_qml_module(DataVisualizationQml
     RESOURCES
         ${resources}
     LIBRARIES
-        Qt::Core
+        Qt::CorePrivate
         Qt::Gui
         Qt::OpenGL
         Qt::Qml

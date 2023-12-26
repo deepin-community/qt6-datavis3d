@@ -17,7 +17,7 @@ Item {
 
     function constructEmpty() {
         empty = Qt.createQmlObject("
-        import QtQuick 2.2
+        import QtQuick
         import QtDataVisualization
         Bars3D {
         }", top)
@@ -25,7 +25,7 @@ Item {
 
     function constructBasic() {
         basic = Qt.createQmlObject("
-        import QtQuick 2.2
+        import QtQuick
         import QtDataVisualization
         Bars3D {
             anchors.fill: parent
@@ -43,7 +43,7 @@ Item {
 
     function constructCommon() {
         common = Qt.createQmlObject("
-        import QtQuick 2.2
+        import QtQuick
         import QtDataVisualization
         Bars3D {
             anchors.fill: parent
@@ -53,7 +53,7 @@ Item {
 
     function constructCommonInit() {
         common_init = Qt.createQmlObject("
-        import QtQuick 2.2
+        import QtQuick
         import QtDataVisualization
         Bars3D {
             anchors.fill: parent
@@ -101,8 +101,6 @@ Item {
             compare(empty.rowAxis.type, AbstractAxis3D.AxisTypeCategory)
             compare(empty.valueAxis.type, AbstractAxis3D.AxisTypeValue)
             waitForRendering(top)
-            empty.destroy()
-            waitForRendering(top)
         }
     }
 
@@ -147,8 +145,6 @@ Item {
             compare(basic.barSpacing, Qt.size(-1.0, -1.0), "barSpacing")
             compare(basic.barSeriesMargin, Qt.size(-1.0, -1.0), "barSeriesMargin")
             waitForRendering(top)
-            basic.destroy()
-            waitForRendering(top)
         }
     }
 
@@ -157,13 +153,16 @@ Item {
         when: windowShown
 
         function test_1_common() {
+            if (Qt.platform.os === "android")
+                return;
+
             constructCommon()
+            if (common.shadowsSupported === false)
+                return;
+
             compare(common.selectionMode, AbstractGraph3D.SelectionItem, "selectionMode")
             compare(common.shadowQuality, AbstractGraph3D.ShadowQualityMedium, "shadowQuality")
-            if (common.shadowsSupported === true)
-                compare(common.msaaSamples, 4, "msaaSamples")
-            else
-                compare(common.msaaSamples, 0, "msaaSamples")
+            compare(common.msaaSamples, 4, "msaaSamples")
             compare(common.theme.type, Theme3D.ThemeQt, "theme")
             compare(common.renderingMode, AbstractGraph3D.RenderIndirect, "renderingMode")
             compare(common.measureFps, false, "measureFps")
@@ -184,14 +183,14 @@ Item {
         }
 
         function test_2_change_common() {
+            if (Qt.platform.os === "android" || common.shadowsSupported === false)
+                return;
+
             common.selectionMode = AbstractGraph3D.SelectionItem | AbstractGraph3D.SelectionRow | AbstractGraph3D.SelectionSlice
             common.shadowQuality = AbstractGraph3D.ShadowQualitySoftHigh
-            compare(common.shadowQuality, AbstractGraph3D.ShadowQualitySoftHigh, "shadowQuality")
             common.msaaSamples = 8
-            if (common.shadowsSupported === true)
-                compare(common.msaaSamples, 8, "msaaSamples")
-            else
-                compare(common.msaaSamples, 0, "msaaSamples")
+            compare(common.shadowQuality, AbstractGraph3D.ShadowQualitySoftHigh, "shadowQuality")
+            compare(common.msaaSamples, 8, "msaaSamples")
             common.theme.type = Theme3D.ThemeRetro
             common.renderingMode = AbstractGraph3D.RenderDirectToBackground_NoClear
             common.measureFps = true
@@ -225,6 +224,9 @@ Item {
         }
 
         function test_3_change_invalid_common() {
+            if (Qt.platform.os === "android" || common.shadowsSupported === false)
+                return;
+
             common.selectionMode = AbstractGraph3D.SelectionRow | AbstractGraph3D.SelectionColumn | AbstractGraph3D.SelectionSlice
             common.theme.type = -2
             common.renderingMode = -1
@@ -236,28 +238,30 @@ Item {
             common.reflection = false
             common.reflectivity = -1.0
             compare(common.selectionMode, AbstractGraph3D.SelectionItem | AbstractGraph3D.SelectionRow | AbstractGraph3D.SelectionSlice, "selectionMode")
-            compare(common.theme.type, -2/*Theme3D.ThemeRetro*/, "theme") // TODO: Fix once QTRD-3367 is done
-            compare(common.renderingMode, -1/*AbstractGraph3D.RenderDirectToBackground_NoClear*/, "renderingMode") // TODO: Fix once QTRD-3367 is done
-            compare(common.aspectRatio, -1.0/*1.0*/, "aspectRatio") // TODO: Fix once QTRD-3367 is done
-            compare(common.horizontalAspectRatio, -2/*1*/, "horizontalAspectRatio") // TODO: Fix once QTRD-3367 is done
-            compare(common.reflectivity, -1.0/*1.0*/, "reflectivity") // TODO: Fix once QTRD-3367 is done
-
-            waitForRendering(top)
-            common.destroy()
+            compare(common.theme.type, Theme3D.ThemeRetro, "theme")
+            compare(common.renderingMode, AbstractGraph3D.RenderDirectToBackground_NoClear, "renderingMode")
+            compare(common.aspectRatio, 1.0, "aspectRatio")
+            compare(common.horizontalAspectRatio, 1.0, "horizontalAspectRatio")
+            compare(common.reflectivity, 1.0, "reflectivity")
             waitForRendering(top)
         }
+    }
 
-        function test_4_common_initialized() {
+    TestCase {
+        name: "Bars3D Common Initialized"
+        when: windowShown
+
+        function test_1_common_initialized() {
+            if (Qt.platform.os === "android")
+                return;
+
             constructCommonInit()
+            if (common_init.shadowsSupported === false) // This test is flaky on VM, use shadowsSupported to detect being run in VM
+                return;
 
             compare(common_init.selectionMode, AbstractGraph3D.SelectionNone, "selectionMode")
-            if (common_init.shadowsSupported === true) {
-                tryCompare(common_init, "shadowQuality", AbstractGraph3D.ShadowQualityLow)
-                compare(common_init.msaaSamples, 2, "msaaSamples")
-            } else {
-                tryCompare(common_init, "shadowQuality", AbstractGraph3D.ShadowQualityNone)
-                compare(common_init.msaaSamples, 0, "msaaSamples")
-            }
+            tryCompare(common_init, "shadowQuality", AbstractGraph3D.ShadowQualityLow)
+            compare(common_init.msaaSamples, 2, "msaaSamples")
             compare(common_init.theme.type, Theme3D.ThemeUserDefined, "theme")
             compare(common_init.renderingMode, AbstractGraph3D.RenderIndirect, "renderingMode")
             compare(common_init.measureFps, true, "measureFps")
@@ -272,9 +276,6 @@ Item {
             compare(common_init.reflectivity, 0.1, "reflectivity")
             compare(common_init.locale, Qt.locale("UK"), "locale")
             compare(common_init.margin, 0.2, "margin")
-
-            waitForRendering(top)
-            common_init.destroy();
             waitForRendering(top)
         }
     }

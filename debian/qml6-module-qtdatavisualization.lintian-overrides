@@ -1,0 +1,3 @@
+# libQt6DataVisualizationQml6 is a private lib installed in a public path
+qml6-module-qtdatavisualization: package-name-doesnt-match-sonames libQt6DataVisualizationQml6
+qml6-module-qtdatavisualization: no-symbols-control-file usr/lib/*/libQt6DataVisualizationQml.so.6.*

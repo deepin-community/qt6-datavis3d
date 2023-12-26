@@ -1,3 +1,16 @@
+qt6-datavis3d (6.6.1-1) experimental; urgency=medium
+
+  [ Patrick Franz ]
+  * New upstream release (6.6.1).
+  * Bump Qt B-Ds to 6.6.1.
+  * Update list of installed files.
+  * Update symbols from buildlogs.
+  * Remove binary package libqt6datavisualizationqml6.
+  * Rename qt6-datavisualization-dev to qt6-datavis3d-dev.
+  * Update d/copyright.
+
+ -- Patrick Franz <deltaone@debian.org>  Thu, 21 Dec 2023 01:12:53 +0100
+
 qt6-datavis3d (6.4.2-6) unstable; urgency=medium
 
   * Team upload to unstable.

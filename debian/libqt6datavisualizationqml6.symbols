@@ -1,6 +1,0 @@
-# SymbolsHelper-Confirmed: 6.4.2 amd64
-libQt6DataVisualizationQml.so.6 libqt6datavisualizationqml6 #MINVER#
-* Build-Depends-Package: qt6-datavisualization-dev
- _Z38qml_register_types_QtDataVisualizationv@Base 6.3.0
- _ZTI28AbstractDeclarativeInterface@Base 6.4.0
- _ZTS28AbstractDeclarativeInterface@Base 6.4.0
