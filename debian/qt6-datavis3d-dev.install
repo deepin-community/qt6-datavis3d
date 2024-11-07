@@ -114,3 +114,5 @@ usr/lib/${DEB_HOST_MULTIARCH}/qt6/mkspecs/modules/qt_lib_datavisualization.pri
 usr/lib/${DEB_HOST_MULTIARCH}/qt6/mkspecs/modules/qt_lib_datavisualizationqml.pri
 usr/lib/${DEB_HOST_MULTIARCH}/qt6/modules/DataVisualization.json
 usr/lib/${DEB_HOST_MULTIARCH}/qt6/modules/DataVisualizationQml.json
+usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6DataVisualization/Qt6DataVisualizationVersionlessAliasTargets.cmake exists
+usr/lib/${DEB_HOST_MULTIARCH}/cmake/Qt6DataVisualizationQml/Qt6DataVisualizationQmlVersionlessAliasTargets.cmake
