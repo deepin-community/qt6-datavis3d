@@ -44,6 +44,8 @@ qt_internal_add_qml_module(DataVisualizationQml
         enumtostringmap.cpp enumtostringmap_p.h
         foreigntypes_p.h
         glstatestore.cpp glstatestore_p.h
+    NO_PCH_SOURCES
+        declarativetheme.cpp # undef QT_NO_FOREACH
     QML_FILES
         ${qml_files}
     RESOURCES
@@ -55,6 +57,7 @@ qt_internal_add_qml_module(DataVisualizationQml
         Qt::Qml
         Qt::Quick
         Qt::DataVisualizationPrivate
+    NO_GENERATE_CPP_EXPORTS
 )
 
 qt_internal_extend_target(DataVisualizationQml CONDITION MACOS
